@@ -1,0 +1,15 @@
+{
+  "name": "claude-todo-tracker",
+  "description": "Claude Code plugin: a self-updating TODO list, Kanban board, daily standup and plan for today.",
+  "owner": {
+    "name": "Sabri Eker",
+    "url": "https://github.com/sabrieker"
+  },
+  "plugins": [
+    {
+      "name": "todo-tracker",
+      "source": "./",
+      "description": "A TODO list that updates itself from your Claude Code sessions, with a Kanban board, a daily standup report and a plan for today."
+    }
+  ]
+}
