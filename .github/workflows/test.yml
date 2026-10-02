@@ -1,0 +1,38 @@
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Launcher in sh / Git Bash (the shell Claude Code uses for hooks)
+        shell: bash
+        env:
+          TODO_HOME: ${{ runner.temp }}/todo
+          TODO_AUTO_SYNC: "0"
+        run: |
+          bin/todo new Active "CI ✓" --projects "$PWD"
+          bin/todo add s1 "a task"
+          echo "{\"cwd\": \"$PWD\"}" | bin/todo hook session-start | grep "CI ✓"
+          bin/todo show --cwd "$PWD" | grep "t2 \[ \] a task"
+          bin/todo daily | grep "Report file:"
+          bin/todo plan | grep "Plan file:"
+      - name: Launcher in cmd.exe
+        if: runner.os == 'Windows'
+        shell: cmd
+        env:
+          TODO_HOME: ${{ runner.temp }}\todo-cmd
+          TODO_AUTO_SYNC: "0"
+        run: |
+          bin\todo.cmd new Active "From cmd" --projects "%CD%"
+          bin\todo.cmd show --all | findstr /C:"From cmd"

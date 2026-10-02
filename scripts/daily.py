@@ -101,10 +101,10 @@ def todo_diff(day):
                    if os.path.basename(p)[:-3] < day.isoformat())
     if not older:
         return None
-    current = open(os.path.join(HISTORY, f"{day.isoformat()}.md")).read() \
+    current = open(os.path.join(HISTORY, f"{day.isoformat()}.md"), encoding="utf-8").read() \
         if day != date.today() and os.path.isfile(os.path.join(HISTORY, f"{day.isoformat()}.md")) \
-        else open(TODO).read()
-    base = open(older[-1]).read()
+        else open(TODO, encoding="utf-8").read()
+    base = open(older[-1], encoding="utf-8").read()
     diff = [l for l in difflib.unified_diff(base.splitlines(), current.splitlines(), lineterm="", n=0)
             if l[:1] in "+-" and not l.startswith(("+++", "---"))]
     return os.path.basename(older[-1])[:-3], diff

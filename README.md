@@ -1,5 +1,7 @@
 # claude-todo-tracker
 
+[![test](https://github.com/sabrieker/claude-todo-tracker/actions/workflows/test.yml/badge.svg)](https://github.com/sabrieker/claude-todo-tracker/actions/workflows/test.yml)
+
 A Claude Code plugin that keeps one TODO list for all your projects. The list updates itself from your Claude Code sessions.
 
 - **One list, many projects.** Each section is linked to project folders. A session sees the open items of its own folder at start. Other sections show as titles only.
@@ -20,7 +22,11 @@ In Claude Code:
 
 Start a new session after the install. Hooks load at session start.
 
-Requirements: macOS or Linux, `python3` 3.9 or newer, and the `claude` CLI on your PATH (the sync worker uses it).
+Requirements:
+- macOS, Linux or Windows.
+- Python 3.9 or newer. The launcher finds it as `python3`, `python` or `py -3`.
+- On Windows: Git for Windows. Claude Code runs hooks and its Bash tool in Git Bash. `bin/todo.cmd` also works from cmd.exe and PowerShell.
+- The `claude` CLI on your PATH. The sync worker uses it.
 
 ## Commands
 
@@ -52,8 +58,10 @@ todo undo SESSION_ID
 todo render
 ```
 
-`todo` is on the PATH inside Claude Code only. In your own terminal, run `python3 ~/.claude/plugins/cache/.../scripts/todo.py`, or link it:
+`todo` is on the PATH inside Claude Code only. In your own terminal, call `<plugin folder>/bin/todo` (or `bin\todo.cmd` on Windows), or link it:
 `ln -s "<plugin folder>/bin/todo" ~/.local/bin/todo`.
+
+The same launcher runs the helper scripts: `todo sync`, `todo daily`, `todo plan` and `todo hook <name>`.
 
 ## Files
 
@@ -106,6 +114,14 @@ Set these in the `env` block of `~/.claude/settings.json`, so the hooks see them
 | `PreToolUse` (Write, Edit) | `guard.py` | Blocks direct edits of `TODO.md` and `TODO.json` |
 | `Stop` | `stop.py` | Starts the sync worker in the background |
 | `SessionEnd` | `stop.py --end` | Marks the session ended and syncs it |
+
+## Tests
+
+```
+python -m unittest discover -s tests -v
+```
+
+GitHub Actions runs them on Linux, macOS and Windows, with Python 3.9 and 3.13.
 
 ## License
 

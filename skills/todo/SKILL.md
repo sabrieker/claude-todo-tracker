@@ -14,6 +14,6 @@ If `$ARGUMENTS` is `undo`, run `todo undo "$CLAUDE_CODE_SESSION_ID"`, relay the 
 
 Otherwise:
 1. Run this with the Bash tool, with `run_in_background: true`:
-   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/todo-sync.py" --current --now`
+   `todo sync --current --now`
 2. Reply with one line: `TODO sync is running in the background.` Then continue the task that was in progress before `/todo`. If nothing was in progress, stop.
 3. When the command finishes, relay its output in one short message (the summary line and one line per change). Then continue the earlier task. Do not start new work because of the TODO content.

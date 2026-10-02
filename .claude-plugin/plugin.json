@@ -1,6 +1,6 @@
 {
   "name": "todo-tracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TODO list that updates itself from your Claude Code sessions, with a Kanban board, a daily standup report and a plan for today.",
   "author": { "name": "Sabri Eker", "url": "https://github.com/sabrieker" },
   "repository": "https://github.com/sabrieker/claude-todo-tracker",

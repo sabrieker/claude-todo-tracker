@@ -14,7 +14,7 @@ Usage: todo-sync.py SESSION_ID [--now] [--dry-run]
 
 Without --now it does nothing if the last sync of this session is younger than MIN_GAP_MIN.
 """
-import fcntl, glob, json, os, re, subprocess, sys
+import glob, json, os, re, subprocess, sys
 from datetime import datetime, timedelta
 
 HERE = os.path.dirname(os.path.realpath(__file__))
@@ -34,7 +34,7 @@ import todo as T
 
 def log(msg):
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
-    with open(LOG, "a") as f:
+    with open(LOG, "a", encoding="utf-8") as f:
         f.write(f"{datetime.now():%Y-%m-%d %H:%M} {msg}\n")
 
 
@@ -120,7 +120,7 @@ Session folder: {cwd}
 def ask_claude(prompt):
     env = dict(os.environ, TODO_SYNC="1")
     env.pop("CLAUDE_CODE_SESSION_ID", None)
-    r = subprocess.run(["claude", "-p", "--model", MODEL, "--tools", "", "--no-session-persistence",
+    r = subprocess.run([C.claude_bin(), "-p", "--model", MODEL, "--tools", "", "--no-session-persistence",
                         "--settings", '{"disableAllHooks": true}', "--output-format", "text"],
                        input=prompt, capture_output=True, text=True, timeout=600, env=env,
                        cwd=C.STATE)
@@ -154,12 +154,14 @@ def main():
         sid = os.environ.get("CLAUDE_CODE_SESSION_ID") or sys.exit("no CLAUDE_CODE_SESSION_ID")
     os.makedirs(SNAP_DIR, exist_ok=True)
     # one worker per session at a time
-    lockf = open(os.path.join(SNAP_DIR, f".{sid}.lock"), "w")
     try:
-        fcntl.flock(lockf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with C.locked(os.path.join(SNAP_DIR, f".{sid}.lock"), blocking=False):
+            run(sid, now_flag, dry)
     except BlockingIOError:
-        print("sync already running for this session"); return
+        print("sync already running for this session")
 
+
+def run(sid, now_flag, dry):
     db = T.load()
     s = db.get("sessions", {}).get(sid, {})
     if not now_flag and s.get("synced_at"):
@@ -202,7 +204,7 @@ def main():
     if cmds:
         db2 = T.load()
         json.dump({"time": T.now_s(), "before": before, "after": T.sections_hash(db2)},
-                  open(os.path.join(SNAP_DIR, sid + ".json"), "w"), ensure_ascii=False)
+                  open(os.path.join(SNAP_DIR, sid + ".json"), "w", encoding="utf-8"), ensure_ascii=False)
     subprocess.run([sys.executable, TODO_PY, "sync-mark", "--session", sid, "--until", last_ts]
                    + (["--title", title] if title else []), capture_output=True, env=dict(os.environ, TODO_SYNC="1"))
     log(f"{sid[:8]} {len(cmds)} commands. {ans.get('summary', '')}")

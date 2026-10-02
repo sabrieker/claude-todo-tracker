@@ -14,7 +14,7 @@ Build the daily report in a subagent, so the raw facts stay out of this conversa
 Prompt for the subagent:
 
 > Write a daily standup report for DAY.
-> 1. Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/daily.py" DAY`. It prints the report file path, the day's Claude Code sessions (title, folder, branch, PR/MR links, the user's prompts), git commits, and TODO list changes.
+> 1. Run `todo daily DAY`. It prints the report file path, the day's Claude Code sessions (title, folder, branch, PR/MR links, the user's prompts), git commits, and TODO list changes.
 > 2. Run `todo show --all --brief` for the open items.
 > 3. Write the report. The user says it out loud at the daily meeting:
 >    - Short sentences. Common words. Active voice. Keep the real names: PR/MR numbers, ticket IDs, project names.

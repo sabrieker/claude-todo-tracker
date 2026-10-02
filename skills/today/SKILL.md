@@ -12,7 +12,7 @@ Build the plan in a subagent, so the raw facts stay out of this conversation.
 Prompt for the subagent:
 
 > Write the plan for today, DAY.
-> 1. Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/plan.py"`. It prints the plan file path, the Tomorrow and Blockers parts of the last daily report, the Claude Code sessions of the last 4 days (with resume commands), and all open TODO items with IDs.
+> 1. Run `todo plan`. It prints the plan file path, the Tomorrow and Blockers parts of the last daily report, the Claude Code sessions of the last 4 days (with resume commands), and all open TODO items with IDs.
 > 2. Write the plan. Short sentences, common words, active voice. Keep real names: PR/MR numbers, ticket IDs, TODO IDs (tN).
 >    - Work only. Leave out personal sessions (games, home, general questions) unless a TODO item names them.
 >    - Order the focus items: first what others wait for (reviews, merges, answers, deadlines), then Active items that the last report said to do next, then the rest.

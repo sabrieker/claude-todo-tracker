@@ -1,3 +1,10 @@
 #!/bin/sh
 # The todo command. Claude Code puts a plugin's bin/ on PATH for the Bash tool.
-exec python3 "$(dirname "$0")/../scripts/todo.py" "$@"
+# Finds Python 3.9+ under its macOS/Linux or Windows name, then runs todo-run.py next to this file.
+for p in python3 python "py -3"; do
+  if $p -c "import sys; sys.exit(sys.version_info < (3, 9))" >/dev/null 2>&1; then
+    exec $p -X utf8 "$0-run.py" "$@"
+  fi
+done
+echo "todo-tracker: Python 3.9 or newer not found (tried python3, python, py -3)" >&2
+exit 1

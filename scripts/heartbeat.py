@@ -47,9 +47,7 @@ def main():
     msg = f"Session resumed. Last prompt here: {prev:%a %d %b %H:%M} ({gap_h:.0f} h ago)."
     if C.AUTO_SYNC and (last_todo is None or last_todo < prev):
         # record the work before the break, in the background
-        log = open(os.path.join(C.STATE, "sync-worker.out"), "a")
-        subprocess.Popen([sys.executable, os.path.join(HERE, "todo-sync.py"), sid, "--now"],
-                         stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
+        C.spawn_detached(C.python_cmd("todo-sync.py", sid, "--now"), os.path.join(C.STATE, "sync-worker.out"))
         msg += " The TODO list is being updated from the earlier work in the background."
     r = subprocess.run([sys.executable, TODO_PY, "show", "--cwd", cwd], capture_output=True, text=True, timeout=10)
     ctx = (f"Background only: the user returns to this session after {gap_h:.0f} hours. "

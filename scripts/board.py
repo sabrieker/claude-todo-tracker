@@ -368,7 +368,8 @@ def main():
     shutil.copyfile(TODO, os.path.join(C.HISTORY, datetime.now().strftime("%Y-%m-%d") + ".md"))
     if "--open" in sys.argv:
         import webbrowser
-        webbrowser.open("file://" + OUT)
+        from pathlib import Path
+        webbrowser.open(Path(OUT).resolve().as_uri())
 
 
 if __name__ == "__main__":

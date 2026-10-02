@@ -20,11 +20,10 @@ if not sid:
     sys.exit(0)
 end = "--end" in sys.argv
 if end:
-    subprocess.run([sys.executable, os.path.join(HERE, "todo.py"), "ping", "--session", sid, "--ended",
-                    "--cwd", ev.get("cwd") or os.getcwd()], capture_output=True, timeout=10)
+    subprocess.run(C.python_cmd("todo.py", "ping", "--session", sid, "--ended",
+                                "--cwd", ev.get("cwd") or os.getcwd()), capture_output=True, timeout=10)
 if not C.AUTO_SYNC:
     sys.exit(0)
 C.ensure_dirs()
-log = open(os.path.join(C.STATE, "sync-worker.out"), "a")
-subprocess.Popen([sys.executable, os.path.join(HERE, "todo-sync.py"), sid] + (["--now"] if end else []),
-                 stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
+C.spawn_detached(C.python_cmd("todo-sync.py", sid, *(["--now"] if end else [])),
+                 os.path.join(C.STATE, "sync-worker.out"))

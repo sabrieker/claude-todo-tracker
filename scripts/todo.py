@@ -24,7 +24,7 @@ Commands (IDs: sN = section, tN = item):
 
 Every change is linked to the Claude Code session that made it (CLAUDE_CODE_SESSION_ID).
 """
-import argparse, fcntl, hashlib, json, os, re, shutil, subprocess, sys
+import argparse, hashlib, json, os, re, shutil, subprocess, sys
 from datetime import date, datetime, timedelta
 
 HERE = os.path.dirname(os.path.realpath(__file__))
@@ -238,12 +238,7 @@ def show_items(items, depth, out, notes=True):
 
 
 def linked(s, cwd):
-    cwd = os.path.realpath(cwd)
-    for p in s["projects"]:
-        p = os.path.realpath(os.path.expanduser(p))
-        if cwd == p or cwd.startswith(p + os.sep):
-            return True
-    return False
+    return any(C.same_or_inside(cwd, p) for p in s["projects"])
 
 
 def show(db, cwd=None, all_=False, full_notes=True):
@@ -365,8 +360,7 @@ def main():
         ap.print_help(); return
 
     C.ensure_dirs()
-    with open(LOCK, "w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with C.locked(LOCK):
         db = load()
         if os.path.isfile(MD) and md_hash() != db.get("md_hash"):
             import_md(db)            # hand edit (or first run): take TODO.md as the truth
@@ -375,7 +369,7 @@ def main():
             changed = False
 
         if a.cmd == "ping":
-            s = session(db, a.session, a.cwd)
+            s = session(db, a.session, C.native_path(a.cwd) if a.cwd else None)
             before = {"last_prompt": s["last_prompt"], "last_todo": s["last_todo"]}
             if a.transcript:
                 s["transcript"] = a.transcript
@@ -404,7 +398,7 @@ def main():
             snap = os.path.join(C.SYNC_DIR, a.session + ".json")
             if not os.path.isfile(snap):
                 sys.exit(f"todo: no automatic sync to undo for session {a.session}.")
-            sn = json.load(open(snap))
+            sn = json.load(open(snap, encoding="utf-8"))
             if sections_hash(db) != sn["after"]:
                 sys.exit("todo: the list changed after that sync, so undo would lose newer changes. "
                          "Fix it by hand with todo commands.")
@@ -421,7 +415,7 @@ def main():
         if a.cmd == "show":
             if changed:
                 sweep(db); render_all(db)
-            print(show(db, a.cwd or os.getcwd(), a.all, not a.brief))
+            print(show(db, C.native_path(a.cwd) if a.cwd else os.getcwd(), a.all, not a.brief))
             return
         if a.cmd == "add":
             obj, sec, _ = find(db, a.ref)
@@ -459,7 +453,7 @@ def main():
             touched = [obj["id"]]
             msg = f"moved {a.ref} to {a.group}"
         elif a.cmd == "new":
-            projects = [p.strip() for p in (a.projects or os.getcwd().replace(os.path.expanduser("~"), "~")).split(",")]
+            projects = [C.native_path(p.strip()) for p in (a.projects or os.getcwd().replace(os.path.expanduser("~"), "~")).split(",")]
             s = {"id": new_id(db, "s"), "title": a.title, "group": a.group, "projects": projects,
                  "waits_for": None, "notes": [], "items": []}
             db["sections"].append(s)
@@ -470,7 +464,7 @@ def main():
             if sec is not None:
                 sys.exit("todo: link takes a section id (sN).")
             for d in a.dirs:
-                d = os.path.abspath(os.path.expanduser(d)).replace(os.path.expanduser("~"), "~")
+                d = os.path.abspath(os.path.expanduser(C.native_path(d))).replace(os.path.expanduser("~"), "~")
                 if d not in obj["projects"]:
                     obj["projects"].append(d)
             touched = [obj["id"]]
